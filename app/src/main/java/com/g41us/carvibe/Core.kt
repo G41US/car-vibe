@@ -100,6 +100,16 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("phone_pulse", true)
         set(v) = sp.edit().putBoolean("phone_pulse", v).apply()
 
+    /** Floating volume / mute / screen-off button over every app. */
+    var floatingControls: Boolean
+        get() = sp.getBoolean("floating_controls", true)
+        set(v) = sp.edit().putBoolean("floating_controls", v).apply()
+
+    /** Where the floating button sits on the right edge, in screen pixels from the top. */
+    var bubbleY: Int
+        get() = sp.getInt("bubble_y", -1)
+        set(v) = sp.edit().putInt("bubble_y", v).apply()
+
     /** App that runs CarPlay / Android Auto. RLink by default. */
     var phoneApp: String
         get() = sp.getString("phone_app", RLINK) ?: RLINK

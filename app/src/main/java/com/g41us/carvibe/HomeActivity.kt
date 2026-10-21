@@ -158,6 +158,7 @@ class HomeActivity : BaseActivity() {
         phone.start()
         Updater.add(updateListener)
         Updater.checkIfDue(this)
+        ControlsService.sync(this)
         renderUpdate()
         map?.onResume()
         Net.main.removeCallbacks(ticker)

@@ -18,6 +18,14 @@ Android Auto through RLink. Built for a 10" 1024×600 unit running Android 8.1.
 - **Dock:** Music, Radio, Camera, Bluetooth, Apps and Settings. Long-press
   Music, Radio, Camera or Bluetooth to choose which app it opens.
 
+## Side buttons
+
+The bezel keys (power, volume) sit on the dead part of the touch panel, so Car
+Vibe adds a floating button on the right edge, over every app including
+CarPlay. Tap it for Volume −/+, Mute and Screen off. Like the power key: tap
+Mute to mute, hold it to turn the screen off. Touch the screen to wake it.
+Drag the button up or down to move it. Needs "Display over other apps".
+
 ## First-time setup
 
 1. Type your car brand. Car Vibe looks the logo up on Wikidata/Wikipedia and
