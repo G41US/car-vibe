@@ -34,7 +34,6 @@ import kotlin.math.roundToInt
 class ControlsService : Service() {
 
     private lateinit var wm: WindowManager
-    private lateinit var audio: AudioManager
     private lateinit var ui: Context
     private lateinit var prefs: Prefs
     private var bubble: View? = null
@@ -51,7 +50,6 @@ class ControlsService : Service() {
         super.onCreate()
         prefs = Prefs(this)
         wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        audio = getSystemService(AUDIO_SERVICE) as AudioManager
         // Same 1024-wide scaling as the activities.
         ui = createConfigurationContext(Scale.override(this))
         startForeground(NOTIFICATION_ID, notification())
@@ -63,7 +61,7 @@ class ControlsService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_REFRESH) restyle()
+        restyle()
         return START_STICKY
     }
 
@@ -116,7 +114,8 @@ class ControlsService : Service() {
         }
         bubbleParams = overlayParams(size, size).apply {
             x = dp(10f)
-            y = prefs.bubbleY.takeIf { it >= 0 } ?: dp(250f)
+            // Default: low on the right edge, clear of the unit's own floating ball near the top.
+            y = prefs.bubbleY.takeIf { it >= 0 } ?: dp(380f)
         }
 
         var downY = 0f
@@ -156,8 +155,11 @@ class ControlsService : Service() {
         bubble?.let { b ->
             b.background = Ui.oval(Color.parseColor("#E60B0F16")).apply { setStroke(dp(1.5f), Ui.withAlpha(accent, 0xAA)) }
             ((b as FrameLayout).getChildAt(0) as ImageView).setColorFilter(accent)
-            b.alpha = if (panel == null) 0.75f else 1f
+            b.alpha = if (panel == null) 0.8f else 1f
+            // The home screen has its own volume controls, so the button steps aside there.
+            b.visibility = if (homeVisible) View.GONE else View.VISIBLE
         }
+        if (homeVisible && panel != null) hidePanel()
     }
 
     /* ----------------------------------------------------------- panel */
@@ -252,20 +254,16 @@ class ControlsService : Service() {
     /* ----------------------------------------------------------- actions */
 
     private fun volume(direction: Int) {
-        try {
-            audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI)
-        } catch (e: SecurityException) { }
+        Volume.change(this, direction)
         refreshLevel()
     }
 
     private fun refreshLevel() {
-        val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
-        val cur = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
-        val muted = audio.isStreamMute(AudioManager.STREAM_MUSIC)
-        level?.text = if (muted) "Muted" else "$cur"
-        level?.textSize = if (muted) 15f else 20f
-        levelBar?.scaleX = if (muted) 0f else cur.toFloat() / max
-        muteIcon?.setColorFilter(if (muted) prefs.accent else ui.getColor(R.color.text))
+        val v = Volume.read(this)
+        level?.text = if (v.muted) "Muted" else "${v.level}"
+        level?.textSize = if (v.muted) 15f else 20f
+        levelBar?.scaleX = if (v.muted) 0f else v.fraction
+        muteIcon?.setColorFilter(if (v.muted) prefs.accent else ui.getColor(R.color.text))
     }
 
     private fun screenOff() {
@@ -276,16 +274,23 @@ class ControlsService : Service() {
     companion object {
         private const val CHANNEL = "controls"
         private const val NOTIFICATION_ID = 41
-        private const val ACTION_REFRESH = "com.g41us.carvibe.REFRESH_CONTROLS"
+
+        @Volatile var homeVisible = false
 
         fun canShow(ctx: Context) = Settings.canDrawOverlays(ctx)
+
+        /** Called by the home screen so the floating button hides while home is showing. */
+        fun setHomeVisible(ctx: Context, visible: Boolean) {
+            homeVisible = visible
+            sync(ctx)
+        }
 
         /** Starts (or restyles) the floating controls if they're on and allowed. */
         fun sync(ctx: Context) {
             val prefs = Prefs(ctx)
             val intent = Intent(ctx, ControlsService::class.java)
             if (prefs.floatingControls && canShow(ctx)) {
-                try { ctx.startForegroundService(intent.setAction(ACTION_REFRESH)) } catch (e: Exception) { }
+                try { ctx.startForegroundService(intent) } catch (e: Exception) { }
             } else {
                 ctx.stopService(intent)
             }

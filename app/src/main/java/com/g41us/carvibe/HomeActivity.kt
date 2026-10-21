@@ -12,6 +12,7 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.location.Location
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -66,6 +67,8 @@ class HomeActivity : BaseActivity() {
     private lateinit var mediaPlay: ImageButton
     private lateinit var mapHolder: FrameLayout
     private lateinit var dock: LinearLayout
+    private lateinit var volLevel: TextView
+    private lateinit var volMute: ImageButton
 
     private lateinit var phone: PhoneMonitor
     private var phoneState = PhoneState(false, null)
@@ -133,6 +136,8 @@ class HomeActivity : BaseActivity() {
         mediaPlay = findViewById(R.id.mediaPlay)
         mapHolder = findViewById(R.id.mapHolder)
         dock = findViewById(R.id.dock)
+        volLevel = findViewById(R.id.volLevel)
+        volMute = findViewById(R.id.volMute)
 
         mediaFill.layoutParams = mediaFill.layoutParams.apply { width = ViewGroup.LayoutParams.MATCH_PARENT }
         mediaFill.pivotX = 0f
@@ -158,7 +163,8 @@ class HomeActivity : BaseActivity() {
         phone.start()
         Updater.add(updateListener)
         Updater.checkIfDue(this)
-        ControlsService.sync(this)
+        ControlsService.setHomeVisible(this, true)
+        renderVolume()
         renderUpdate()
         map?.onResume()
         Net.main.removeCallbacks(ticker)
@@ -172,6 +178,7 @@ class HomeActivity : BaseActivity() {
         MediaHub.remove(mediaListener)
         phone.stop()
         Updater.remove(updateListener)
+        ControlsService.setHomeVisible(this, false)
         map?.onPause()
         super.onPause()
     }
@@ -200,9 +207,12 @@ class HomeActivity : BaseActivity() {
         strip.layoutParams = strip.layoutParams.apply { width = dpi(prefs.deadZone.toFloat()) }
 
         listOf(R.id.clockCard, R.id.speedCard, R.id.mediaCard, R.id.mapsCard).forEach {
-            findViewById<View>(it).background = Ui.round(card, dp(22f), edge, one)
+            findViewById<View>(it).background = cardBackground(dp(22f))
         }
-        phoneCard.background = Ui.pressable(Ui.round(getColor(R.color.hero), dp(28f), getColor(R.color.hero_edge), one))
+        findViewById<View>(R.id.volGroup).background = Ui.round(getColor(R.color.chip), dp(22f), edge, one)
+        listOf(R.id.volDown, R.id.volUp, R.id.volMute).forEach {
+            findViewById<View>(it).background = Ui.pressable(Ui.round(Color.TRANSPARENT, dp(22f)))
+        }
         dock.background = Ui.round(getColor(R.color.dock), dp(22f), edge, one)
         mapHolder.setBackgroundColor(Color.parseColor("#090D14"))
 
@@ -243,12 +253,19 @@ class HomeActivity : BaseActivity() {
         renderPhone()
     }
 
+    /** Cards are lit softly from the top, which reads better on this screen than flat fills. */
+    private fun cardBackground(radius: Float): GradientDrawable =
+        GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(getColor(R.color.card_top), getColor(R.color.card))).apply {
+            cornerRadius = radius
+            setStroke(dpi(1f), getColor(R.color.card_edge))
+        }
+
     private fun renderBadge() {
         val file = Logo.file(this)
         val stamp = if (file.exists()) file.lastModified() + prefs.logoStyle else 0L
         if (stamp == logoStamp) return
         logoStamp = stamp
-        val bmp: Bitmap? = Logo.load(this)
+        val bmp: Bitmap? = Logo.load(this)?.let { if (Logo.hasTransparency(it)) Logo.trim(it) else it }
         if (bmp == null) {
             badgeLogo.setImageDrawable(null)
             badgeHint.visibility = View.VISIBLE
@@ -286,7 +303,7 @@ class HomeActivity : BaseActivity() {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
                 contentDescription = item.label
-                val bg = if (active) Ui.round(Color.parseColor("#111A29"), dp(17f)) else Ui.round(Color.TRANSPARENT, dp(17f))
+                val bg = if (active) Ui.round(Ui.withAlpha(accent, 0x24), dp(17f)) else Ui.round(Color.TRANSPARENT, dp(17f))
                 Ui.clickable(this, bg)
             }
             val icon = ImageView(this).apply {
@@ -296,13 +313,13 @@ class HomeActivity : BaseActivity() {
             }
             val label = TextView(this).apply {
                 text = item.label
-                textSize = 12f
+                textSize = 13f
                 setTextColor(if (active) accent else getColor(R.color.text_soft))
                 typeface = resources.getFont(if (active) R.font.manrope_semibold else R.font.manrope_medium)
                 gravity = Gravity.CENTER
                 maxLines = 1
             }
-            cell.addView(icon, LinearLayout.LayoutParams(dpi(21f), dpi(21f)))
+            cell.addView(icon, LinearLayout.LayoutParams(dpi(24f), dpi(24f)))
             cell.addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dpi(3f)
             })
@@ -345,9 +362,19 @@ class HomeActivity : BaseActivity() {
             safeStart(Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); true
         }
         findViewById<View>(R.id.mapsClick).setOnClickListener { openMaps() }
+        findViewById<View>(R.id.volDown).setOnClickListener { Volume.change(this, AudioManager.ADJUST_LOWER); renderVolume() }
+        findViewById<View>(R.id.volUp).setOnClickListener { Volume.change(this, AudioManager.ADJUST_RAISE); renderVolume() }
+        volMute.setOnClickListener { Volume.change(this, AudioManager.ADJUST_TOGGLE_MUTE); renderVolume() }
+        volMute.setOnLongClickListener {
+            startActivity(Intent(this, ScreenOffActivity::class.java)); true
+        }
         findViewById<View>(R.id.mediaInfo).setOnClickListener { openMediaApp() }
         mediaPlay.setOnClickListener {
-            if (MediaHub.nowPlaying != null) MediaHub.playPause() else openMediaApp()
+            when {
+                MediaHub.nowPlaying != null -> MediaHub.playPause()
+                phoneState.connected -> openPhoneApp()
+                else -> openMediaApp()
+            }
         }
         findViewById<View>(R.id.mediaPrev).setOnClickListener { MediaHub.previous() }
         findViewById<View>(R.id.mediaNext).setOnClickListener { MediaHub.next() }
@@ -416,6 +443,8 @@ class HomeActivity : BaseActivity() {
         val s = phoneState
         val accent = prefs.accent
         phoneGlow.connected = s.connected
+        phoneCard.background = Ui.pressable(Ui.round(getColor(R.color.hero), dp(28f),
+            if (s.connected) Ui.withAlpha(accent, 0x66) else getColor(R.color.hero_edge), dpi(1f)))
         if (s.connected) {
             val dot = Ui.oval(accent).apply { setBounds(0, 0, dpi(8f), dpi(8f)) }
             phoneStatus.setCompoundDrawables(dot, null, null, null)
@@ -445,7 +474,7 @@ class HomeActivity : BaseActivity() {
             np == null -> {
                 mediaLabel.text = "MEDIA"
                 mediaTitle.text = "Nothing playing"
-                mediaArtist.text = "Tap to open music"
+                mediaArtist.text = if (phoneState.connected) "Tap play for your phone's music" else "Tap to choose music"
             }
             else -> {
                 mediaLabel.text = if (np.playing) "NOW PLAYING" else "PAUSED"
@@ -534,6 +563,13 @@ class HomeActivity : BaseActivity() {
         updateClock(force = false)
         updateSpeed()
         updateProgress()
+        renderVolume()
+    }
+
+    private fun renderVolume() {
+        val v = Volume.read(this)
+        volLevel.text = if (v.muted) "–" else "${v.level}"
+        volMute.setColorFilter(if (v.muted) prefs.accent else getColor(R.color.text))
     }
 
     private fun updateClock(force: Boolean) {

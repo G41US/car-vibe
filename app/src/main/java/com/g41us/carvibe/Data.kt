@@ -82,8 +82,12 @@ object BrandSearch {
 
         val brands = ids.mapNotNull { id ->
             val e = entities.optJSONObject(id) ?: return@mapNotNull null
-            val logo = e.optJSONObject("claims")?.optJSONArray("P154")?.optJSONObject(0)
-                ?.optJSONObject("mainsnak")?.optJSONObject("datavalue")?.optString("value")
+            // P8972 "small logo or icon" is usually just the emblem; P154 "logo image"
+            // often adds the wordmark, which looks tiny in a round badge.
+            val claims = e.optJSONObject("claims")
+            fun file(prop: String) = claims?.optJSONArray(prop)?.optJSONObject(0)
+                ?.optJSONObject("mainsnak")?.optJSONObject("datavalue")?.optString("value")?.takeIf { it.isNotBlank() }
+            val logo = file("P8972") ?: file("P154")
             if (logo.isNullOrBlank()) return@mapNotNull null
             val label = e.optJSONObject("labels")?.optJSONObject("en")?.optString("value") ?: return@mapNotNull null
             val desc = e.optJSONObject("descriptions")?.optJSONObject("en")?.optString("value") ?: ""
@@ -103,7 +107,32 @@ object Logo {
     fun file(ctx: Context) = File(ctx.filesDir, "brand_logo.png")
 
     fun save(ctx: Context, bmp: Bitmap) {
-        file(ctx).outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val trimmed = if (hasTransparency(bmp)) trim(bmp) else bmp
+        file(ctx).outputStream().use { trimmed.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** Cuts away empty transparent margins so the emblem fills the badge. */
+    fun trim(bmp: Bitmap): Bitmap {
+        val w = bmp.width
+        val h = bmp.height
+        val px = IntArray(w * h)
+        bmp.getPixels(px, 0, w, 0, 0, w, h)
+        var left = w; var top = h; var right = -1; var bottom = -1
+        for (y in 0 until h) for (x in 0 until w) {
+            if ((px[y * w + x] ushr 24) > 24) {
+                if (x < left) left = x
+                if (x > right) right = x
+                if (y < top) top = y
+                if (y > bottom) bottom = y
+            }
+        }
+        if (right < left || bottom < top) return bmp
+        val pad = (maxOf(right - left, bottom - top) * 0.04f).toInt()
+        val l = (left - pad).coerceAtLeast(0)
+        val t = (top - pad).coerceAtLeast(0)
+        val r = (right + pad).coerceAtMost(w - 1)
+        val b = (bottom + pad).coerceAtMost(h - 1)
+        return Bitmap.createBitmap(bmp, l, t, r - l + 1, b - t + 1)
     }
 
     fun load(ctx: Context): Bitmap? {
