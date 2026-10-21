@@ -50,14 +50,33 @@ class SettingsActivity : BaseActivity() {
         setContentView(root)
     }
 
+    private val updateListener = Updater.Listener { render() }
+
     override fun onResume() {
         super.onResume()
+        Updater.add(updateListener)
+        if (Updater.state == Updater.State.IDLE) Updater.check(this)
         render()
+    }
+
+    override fun onPause() {
+        Updater.remove(updateListener)
+        super.onPause()
     }
 
     private fun render() {
         spacer.layoutParams = spacer.layoutParams.apply { width = dpi(prefs.deadZone.toFloat()) }
         list.removeAllViews()
+
+        section("Updates")
+        row("Car Vibe updates", Updater.summary(this)) {
+            when (Updater.state) {
+                Updater.State.AVAILABLE -> addView(pill("Download", true) { Updater.download(this@SettingsActivity) })
+                Updater.State.READY -> addView(pill("Install", true) { Updater.install(this@SettingsActivity) })
+                Updater.State.CHECKING, Updater.State.DOWNLOADING -> Unit
+                else -> addView(pill("Check", false) { Updater.check(this@SettingsActivity) })
+            }
+        }
 
         section("Car")
         row("Car brand", prefs.brandName.ifBlank { "Not set" }) {
@@ -156,8 +175,7 @@ class SettingsActivity : BaseActivity() {
         row("Run setup again", "Brand, model, phone and permissions") {
             addView(pill("Start", false) { startActivity(Intent(this@SettingsActivity, SetupActivity::class.java)) })
         }
-        val version = try { packageManager.getPackageInfo(packageName, 0).versionName } catch (e: Exception) { "" }
-        row("Car Vibe", "Version $version") {}
+        row("Car Vibe", "Version ${Updater.currentName(this)} · github.com/${Updater.REPO}") {}
     }
 
     private fun section(title: String) {

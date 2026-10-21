@@ -158,6 +158,19 @@
                     android:layout_height="1dp"
                     android:layout_weight="1" />
 
+                <TextView
+                    android:id="@+id/updateChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="14dp"
+                    android:fontFamily="@font/manrope_semibold"
+                    android:gravity="center"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="Update ready"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
                 <ImageView
                     android:id="@+id/gpsIcon"
                     android:layout_width="16dp"

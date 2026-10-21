@@ -82,6 +82,7 @@ class HomeActivity : BaseActivity() {
 
     private val locationListener = LocationHub.Listener { onLocation(it) }
     private val mediaListener = MediaHub.Listener { renderMedia() }
+    private val updateListener = Updater.Listener { renderUpdate() }
     private val ticker = object : Runnable {
         override fun run() {
             tick()
@@ -155,6 +156,9 @@ class HomeActivity : BaseActivity() {
         MediaHub.attach(this)
         renderMedia()
         phone.start()
+        Updater.add(updateListener)
+        Updater.checkIfDue(this)
+        renderUpdate()
         map?.onResume()
         Net.main.removeCallbacks(ticker)
         Net.main.post(ticker)
@@ -166,6 +170,7 @@ class HomeActivity : BaseActivity() {
         LocationHub.stop()
         MediaHub.remove(mediaListener)
         phone.stop()
+        Updater.remove(updateListener)
         map?.onPause()
         super.onPause()
     }
@@ -386,6 +391,23 @@ class HomeActivity : BaseActivity() {
     private fun safeStart(intent: Intent): Boolean = try {
         startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); true
     } catch (e: Exception) { false }
+
+    /* ------------------------------------------------------------ updates */
+
+    private fun renderUpdate() {
+        val chip = findViewById<TextView>(R.id.updateChip)
+        val show = Updater.state == Updater.State.AVAILABLE || Updater.state == Updater.State.READY
+        chip.visibility = if (show) View.VISIBLE else View.GONE
+        if (!show) return
+        val accent = prefs.accent
+        chip.setTextColor(accent)
+        chip.text = if (Updater.state == Updater.State.READY) "Update ready · Install" else "Update available"
+        Ui.clickable(chip, Ui.round(Ui.withAlpha(accent, 0x22), dp(15f), Ui.withAlpha(accent, 0x66), dpi(1f)))
+        chip.setOnClickListener {
+            if (Updater.state == Updater.State.READY) Updater.install(this)
+            else startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
 
     /* ------------------------------------------------------------ phone */
 

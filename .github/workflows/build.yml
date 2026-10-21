@@ -27,18 +27,31 @@ jobs:
           ./gradlew assembleRelease
           cp app/build/outputs/apk/release/app-release.apk CarVibe.apk
 
+      # The app reads this to know an update exists. The version number matches
+      # the one Gradle gives the build (run number + 1).
+      - name: Write version.json
+        run: |
+          CODE=$((GITHUB_RUN_NUMBER + 1))
+          NOTES=$(git log -1 --pretty=%s | jq -Rs 'rtrimstr("\n")')
+          echo "{\"versionCode\": $CODE, \"versionName\": \"1.0.$CODE\", \"notes\": $NOTES}" > version.json
+          cat version.json
+
       - uses: actions/upload-artifact@v4
         with:
           name: CarVibe-apk
-          path: CarVibe.apk
+          path: |
+            CarVibe.apk
+            version.json
 
-      # Keeps one stable download link for Downloader:
-      # https://github.com/<you>/<repo>/releases/latest/download/CarVibe.apk
+      # Keeps one stable download link for Downloader and the in-app updater:
+      # https://github.com/G41US/car-vibe/releases/latest/download/CarVibe.apk
       - name: Publish as the latest release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Car Vibe (latest build)
           body: Built from ${{ github.sha }}
-          files: CarVibe.apk
+          files: |
+            CarVibe.apk
+            version.json
           make_latest: true

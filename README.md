@@ -32,12 +32,19 @@ Download `CarVibe.apk` from the latest release (or the build's artifact),
 install it with Downloader or from a USB stick, then press Home and choose
 Car Vibe → Always.
 
+## Updates
+
+Car Vibe updates itself from this repo. It checks every six hours (and when you
+open Settings); when a newer build exists, an "Update available" chip appears
+on the home screen. Download and install it from Settings › Car Vibe updates.
+The first time, Android asks you to allow installs from Car Vibe.
+
 ## Build
 
 Every push to `main` builds the APK on GitHub Actions and publishes it as the
 `latest` release, so this link always points at the newest build:
 
-    https://github.com/<you>/<repo>/releases/latest/download/CarVibe.apk
+    https://github.com/G41US/car-vibe/releases/latest/download/CarVibe.apk
 
 The APK is signed with `app/carvibe.jks` so each new build installs over the
 old one. Keep the repository private if you don't want others to reuse that key.
