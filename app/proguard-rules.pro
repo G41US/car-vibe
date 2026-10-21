@@ -1,0 +1,3 @@
+-keep class org.osmdroid.** { *; }
+-dontwarn org.osmdroid.**
+-keep class com.g41us.carvibe.** { *; }
