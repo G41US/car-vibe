@@ -133,7 +133,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="34dp"
+                android:layout_height="44dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -143,7 +143,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/manrope_semibold"
                     android:textColor="@color/text"
-                    android:textSize="20sp" />
+                    android:textSize="22sp" />
 
                 <TextView
                     android:id="@+id/date"
@@ -151,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:textColor="@color/text_mute"
-                    android:textSize="14sp" />
+                    android:textSize="15sp" />
 
                 <View
                     android:layout_width="0dp"
@@ -170,6 +170,51 @@
                     android:text="Update ready"
                     android:textSize="12sp"
                     android:visibility="gone" />
+
+                <!-- Volume, since the bezel volume keys sit on the dead edge. -->
+                <LinearLayout
+                    android:id="@+id/volGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/volDown"
+                        android:layout_width="52dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="Volume down"
+                        android:src="@drawable/ic_vol_down"
+                        android:tint="@color/text" />
+
+                    <TextView
+                        android:id="@+id/volLevel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:gravity="center"
+                        android:minWidth="44dp"
+                        android:textColor="@color/text"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/volUp"
+                        android:layout_width="52dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="Volume up"
+                        android:src="@drawable/ic_vol_up"
+                        android:tint="@color/text" />
+
+                    <ImageButton
+                        android:id="@+id/volMute"
+                        android:layout_width="52dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="6dp"
+                        android:contentDescription="Mute. Hold to turn the screen off"
+                        android:src="@drawable/ic_mute"
+                        android:tint="@color/text" />
+                </LinearLayout>
 
                 <ImageView
                     android:id="@+id/gpsIcon"
@@ -223,7 +268,7 @@
                             android:letterSpacing="-0.04"
                             android:maxLines="1"
                             android:textColor="@color/text"
-                            android:textSize="70sp" />
+                            android:textSize="76sp" />
 
                         <TextView
                             android:layout_width="wrap_content"

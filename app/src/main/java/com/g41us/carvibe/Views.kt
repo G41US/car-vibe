@@ -189,10 +189,10 @@ class PhoneGlowView @JvmOverloads constructor(
         }
 
         // Body
-        framePaint.color = if (connected) Color.parseColor("#0A1220") else Color.parseColor("#0A0E15")
+        framePaint.color = if (connected) Color.parseColor("#0A1220") else Color.parseColor("#0C121C")
         canvas.drawRoundRect(rect, 24f * d, 24f * d, framePaint)
         strokePaint.strokeWidth = 2f * d
-        strokePaint.color = if (connected) accent else Color.parseColor("#2A3446")
+        strokePaint.color = if (connected) accent else Color.parseColor("#46577A")
         val half = strokePaint.strokeWidth / 2f
         canvas.drawRoundRect(
             rect.left + half, rect.top + half, rect.right - half, rect.bottom - half,
@@ -209,7 +209,7 @@ class PhoneGlowView @JvmOverloads constructor(
                 Color.parseColor("#12233C"), Color.parseColor("#0B1424"), Shader.TileMode.CLAMP)
         } else {
             screenPaint.shader = null
-            screenPaint.color = Color.parseColor("#0D121B")
+            screenPaint.color = Color.parseColor("#111A28")
         }
         canvas.drawRoundRect(sl, st, sr, sb, 16f * d, 16f * d, screenPaint)
 
@@ -217,6 +217,23 @@ class PhoneGlowView @JvmOverloads constructor(
         framePaint.color = Color.parseColor("#04060A")
         val cx = rect.centerX()
         canvas.drawRoundRect(cx - 11f * d, st + 9f * d, cx + 11f * d, st + 15f * d, 3f * d, 3f * d, framePaint)
+
+        if (!connected) {
+            // A Bluetooth mark, to hint at how to connect.
+            linePaint.color = Color.parseColor("#46577A")
+            linePaint.strokeWidth = 2.2f * d
+            val s = 1.6f * d
+            val ox = cx - 12f * s
+            val oy = rect.centerY() - 12f * s
+            path.reset()
+            path.moveTo(ox + 7f * s, oy + 7f * s)
+            path.lineTo(ox + 17f * s, oy + 17f * s)
+            path.lineTo(ox + 12f * s, oy + 22f * s)
+            path.lineTo(ox + 12f * s, oy + 2f * s)
+            path.lineTo(ox + 17f * s, oy + 7f * s)
+            path.lineTo(ox + 7f * s, oy + 17f * s)
+            canvas.drawPath(path, linePaint)
+        }
 
         if (connected) {
             // Check mark in a circle

@@ -149,9 +149,15 @@ object MediaHub {
         val art = md?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
             ?: md?.getBitmap(MediaMetadata.METADATA_KEY_ART)
             ?: md?.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+        val title = md?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
+        // Some head-unit apps keep an empty session around; that isn't music.
+        if (title.isNullOrBlank() && st?.state != PlaybackState.STATE_PLAYING) {
+            nowPlaying = null
+            changed()
+            return
+        }
         nowPlaying = NowPlaying(
-            title = md?.getString(MediaMetadata.METADATA_KEY_TITLE)
-                ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE),
+            title = title,
             artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST)
                 ?: md?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
                 ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE),

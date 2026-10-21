@@ -79,6 +79,11 @@ class SettingsActivity : BaseActivity() {
             }
         }
 
+        section("Help")
+        row("Send system info", diagStatus ?: "If volume or phone detection doesn't work, this sends a report about the head unit so it can be fixed.") {
+            if (!diagRunning) addView(pill("Send", false) { confirmDiagnostics() })
+        }
+
         section("Side buttons")
         row("Floating controls", "Volume, mute and screen off, because the bezel keys sit on the dead edge. Tap mute to mute, hold it to turn the screen off. Drag the button up or down.") {
             if (!ControlsService.canShow(this@SettingsActivity)) {
@@ -190,6 +195,38 @@ class SettingsActivity : BaseActivity() {
             addView(pill("Start", false) { startActivity(Intent(this@SettingsActivity, SetupActivity::class.java)) })
         }
         row("Car Vibe", "Version ${Updater.currentName(this)} · github.com/${Updater.REPO}") {}
+    }
+
+    private var diagStatus: String? = null
+    private var diagRunning = false
+
+    private fun confirmDiagnostics() {
+        AlertDialog.Builder(this, R.style.Dialog_CarVibe)
+            .setTitle("Send system info?")
+            .setMessage("Car Vibe will upload a report about this head unit to temp.sh, where it's kept for 3 days: the model, audio and Bluetooth settings, the list of installed apps and copies of the unit maker's own system apps. No contacts, photos, location or device names.\n\nYou'll get a short code to send to Claude.")
+            .setPositiveButton("Upload") { _, _ -> runDiagnostics() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun runDiagnostics() {
+        diagRunning = true
+        Diagnostics.run(this, { msg -> diagStatus = msg; render() }) { url ->
+            diagRunning = false
+            if (url == null || !url.startsWith("http")) {
+                diagStatus = "Upload failed. Check the internet connection and try again."
+                render()
+                return@run
+            }
+            val code = Diagnostics.codeOf(url)
+            diagStatus = "Sent. Your code is $code"
+            render()
+            AlertDialog.Builder(this, R.style.Dialog_CarVibe)
+                .setTitle("Your code: $code")
+                .setMessage("Send this code to Claude. It works for 3 days.")
+                .setPositiveButton("Done", null)
+                .show()
+        }
     }
 
     private fun section(title: String) {
