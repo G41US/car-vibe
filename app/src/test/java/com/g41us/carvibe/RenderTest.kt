@@ -56,6 +56,29 @@ class RenderTest {
     }
 
     @Test
+    fun floatingControls() {
+        org.robolectric.shadows.ShadowSettings.setCanDrawOverlays(true)
+        val service = Robolectric.buildService(ControlsService::class.java).create().get()
+        ControlsService::class.java.getDeclaredMethod("showPanel").apply { isAccessible = true }.invoke(service)
+        val bubble = ControlsService::class.java.getDeclaredField("bubble").apply { isAccessible = true }.get(service) as View
+        val panel = ControlsService::class.java.getDeclaredField("panel").apply { isAccessible = true }.get(service) as View
+        // Draw both on a dark backdrop, laid out the way they sit on the right edge.
+        val w = 1024; val h = 552
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        c.drawColor(android.graphics.Color.parseColor("#1B2333"))
+        fun place(v: View, right: Int, top: Int) {
+            v.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            v.layout(0, 0, v.measuredWidth, v.measuredHeight)
+            c.save(); c.translate((w - right - v.measuredWidth).toFloat(), top.toFloat()); v.draw(c); c.restore()
+        }
+        place(bubble, 10, 250)
+        place(panel, 76, 238)
+        val dir = File("build/screens").apply { mkdirs() }
+        File(dir, "controls.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    @Test
     fun settings() {
         Prefs(RuntimeEnvironment.getApplication()).setupDone = true
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()

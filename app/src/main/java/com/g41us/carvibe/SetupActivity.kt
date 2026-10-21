@@ -298,7 +298,11 @@ class SetupActivity : BaseActivity() {
     private fun buildAccessStep(): View {
         val p = page("Phone and access", "A few switches so speed, maps, music and your phone all work.")
         accessList = vbox()
-        p.addView(accessList, LinearLayout.LayoutParams(MATCH, 0, 1f).apply { topMargin = dpi(14f) })
+        val scroll = android.widget.ScrollView(this).apply {
+            isVerticalScrollBarEnabled = false
+            addView(accessList)
+        }
+        p.addView(scroll, LinearLayout.LayoutParams(MATCH, 0, 1f).apply { topMargin = dpi(14f); bottomMargin = dpi(10f) })
         p.addView(footer("Change any of this later in Settings.",
             pill("Back", false) { show(1) },
             pill("Finish", true) {
@@ -323,6 +327,14 @@ class SetupActivity : BaseActivity() {
         accessRow("Media access", "Shows what's playing and spots your phone. Turn on Car Vibe in the list.", media, "Open") {
             try { startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")) } catch (e: Exception) {
                 Toast.makeText(this, "Open Android settings › Apps › Special access › Notification access", Toast.LENGTH_LONG).show()
+            }
+        }
+        val overlay = ControlsService.canShow(this)
+        accessRow("Volume and screen buttons", "Floating buttons replace the bezel keys on the dead edge. Turn on Car Vibe.", overlay, "Allow") {
+            try {
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Open Android settings › Apps › Special access › Display over other apps", Toast.LENGTH_LONG).show()
             }
         }
         accessRow("Make Car Vibe your home screen", "Choose Car Vibe, then Always", false, "Open") {

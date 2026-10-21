@@ -54,6 +54,7 @@ class SettingsActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        ControlsService.sync(this)
         Updater.add(updateListener)
         if (Updater.state == Updater.State.IDLE) Updater.check(this)
         render()
@@ -75,6 +76,19 @@ class SettingsActivity : BaseActivity() {
                 Updater.State.READY -> addView(pill("Install", true) { Updater.install(this@SettingsActivity) })
                 Updater.State.CHECKING, Updater.State.DOWNLOADING -> Unit
                 else -> addView(pill("Check", false) { Updater.check(this@SettingsActivity) })
+            }
+        }
+
+        section("Side buttons")
+        row("Floating controls", "Volume, mute and screen off, because the bezel keys sit on the dead edge. Tap mute to mute, hold it to turn the screen off. Drag the button up or down.") {
+            if (!ControlsService.canShow(this@SettingsActivity)) {
+                addView(pill("Allow", true) { openOverlayPermission() })
+            } else {
+                addView(pill(if (prefs.floatingControls) "On" else "Off", prefs.floatingControls) {
+                    prefs.floatingControls = !prefs.floatingControls
+                    ControlsService.sync(this@SettingsActivity)
+                    render()
+                })
             }
         }
 
@@ -233,6 +247,12 @@ class SettingsActivity : BaseActivity() {
     private fun openNotificationAccess() {
         if (!start(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))) {
             Toast.makeText(this, "Open Android settings › Apps › Special access › Notification access", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun openOverlayPermission() {
+        if (!start(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))) {
+            Toast.makeText(this, "Open Android settings › Apps › Special access › Display over other apps", Toast.LENGTH_LONG).show()
         }
     }
 
