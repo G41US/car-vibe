@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Designed on a 1024-wide canvas: Scale.kt makes 1dp = screenWidth / 1024 px. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <View
+        android:id="@+id/bgGlow"
+        android:layout_width="520dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="350dp" />
+
+    <View
+        android:id="@+id/glowLine"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="240dp"
+        android:layout_marginEnd="120dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!-- Left strip: sits over the dead edge of the touch panel, so nothing here is tappable. -->
+        <LinearLayout
+            android:id="@+id/strip"
+            android:layout_width="170dp"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="18dp"
+            android:paddingBottom="20dp">
+
+            <FrameLayout
+                android:id="@+id/badgeRing"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:padding="3dp">
+
+                <FrameLayout
+                    android:id="@+id/badgeInner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/badgeLogo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        android:padding="15dp"
+                        android:scaleType="fitCenter" />
+
+                    <TextView
+                        android:id="@+id/badgeHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/manrope_bold"
+                        android:letterSpacing="0.12"
+                        android:text="LOGO"
+                        android:textColor="@color/text_mute"
+                        android:textSize="10sp" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/carModel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/manrope_bold"
+                android:gravity="center"
+                android:letterSpacing="0.12"
+                android:maxWidth="150dp"
+                android:maxLines="2"
+                android:textAllCaps="true"
+                android:textColor="@color/text_soft"
+                android:textSize="12sp" />
+
+            <View
+                android:id="@+id/stripLine"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="14dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/weatherIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_sun"
+                android:tint="#B7C0CF" />
+
+            <TextView
+                android:id="@+id/weatherTemp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/manrope_semibold"
+                android:text="--°"
+                android:textColor="@color/text_soft"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/weatherCity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxWidth="150dp"
+                android:maxLines="1"
+                android:textColor="@color/text_mute"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/main"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="6dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/manrope_semibold"
+                    android:textColor="@color/text"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:textColor="@color/text_mute"
+                    android:textSize="14sp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/gpsIcon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_pin"
+                    android:tint="@color/text_mute" />
+
+                <TextView
+                    android:id="@+id/gpsText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="GPS searching"
+                    android:textColor="@color/text_mute"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="12dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <!-- Left column: clock and speed -->
+                <LinearLayout
+                    android:layout_width="200dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/clockCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="12dp">
+
+                        <TextClock
+                            android:id="@+id/clock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/manrope_extralight"
+                            android:format12Hour="h:mm"
+                            android:format24Hour="HH:mm"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="-0.04"
+                            android:maxLines="1"
+                            android:textColor="@color/text"
+                            android:textSize="70sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="@font/manrope_semibold"
+                            android:letterSpacing="0.16"
+                            android:text="LOCAL TIME"
+                            android:textColor="@color/text_mute"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/speedCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="172dp"
+                        android:layout_marginTop="12dp">
+
+                        <com.g41us.carvibe.SpeedGaugeView
+                            android:id="@+id/gauge"
+                            android:layout_width="146dp"
+                            android:layout_height="146dp"
+                            android:layout_gravity="center" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/speed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/manrope_semibold"
+                                android:includeFontPadding="false"
+                                android:text="--"
+                                android:textColor="@color/text"
+                                android:textSize="42sp" />
+
+                            <TextView
+                                android:id="@+id/speedUnit"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:fontFamily="@font/manrope_bold"
+                                android:letterSpacing="0.14"
+                                android:text="KM/H · GPS"
+                                android:textColor="@color/text_mute"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Centre: the phone -->
+                <LinearLayout
+                    android:id="@+id/phoneCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <com.g41us.carvibe.PhoneGlowView
+                        android:id="@+id/phoneGlow"
+                        android:layout_width="190dp"
+                        android:layout_height="232dp" />
+
+                    <TextView
+                        android:id="@+id/phoneStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:drawablePadding="8dp"
+                        android:fontFamily="@font/manrope_bold"
+                        android:gravity="center"
+                        android:letterSpacing="0.14"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/phoneName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="25sp" />
+
+                    <TextView
+                        android:id="@+id/phoneHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:textColor="@color/text_dim"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Right column: media and maps -->
+                <LinearLayout
+                    android:layout_width="260dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/mediaCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp">
+
+                        <LinearLayout
+                            android:id="@+id/mediaInfo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/mediaArt"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:importantForAccessibility="no"
+                                android:scaleType="centerCrop" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/mediaLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/manrope_bold"
+                                    android:letterSpacing="0.16"
+                                    android:text="NOW PLAYING"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:id="@+id/mediaTitle"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:ellipsize="end"
+                                    android:fontFamily="@font/manrope_semibold"
+                                    android:maxLines="1"
+                                    android:textColor="@color/text"
+                                    android:textSize="17sp" />
+
+                                <TextView
+                                    android:id="@+id/mediaArtist"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:textColor="@color/text_dim"
+                                    android:textSize="13sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <FrameLayout
+                            android:id="@+id/mediaTrack"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp">
+
+                            <View
+                                android:id="@+id/mediaFill"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent" />
+                        </FrameLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <ImageButton
+                                android:id="@+id/mediaPrev"
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:background="@null"
+                                android:contentDescription="Previous"
+                                android:src="@drawable/ic_prev"
+                                android:tint="@color/text" />
+
+                            <ImageButton
+                                android:id="@+id/mediaPlay"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginStart="18dp"
+                                android:layout_marginEnd="18dp"
+                                android:contentDescription="Play"
+                                android:src="@drawable/ic_play"
+                                android:tint="@color/bg" />
+
+                            <ImageButton
+                                android:id="@+id/mediaNext"
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:background="@null"
+                                android:contentDescription="Next"
+                                android:src="@drawable/ic_next"
+                                android:tint="@color/text" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/mapsCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="146dp"
+                        android:layout_marginTop="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <FrameLayout
+                                android:id="@+id/mapHolder"
+                                android:layout_width="match_parent"
+                                android:layout_height="92dp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="16dp">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/manrope_semibold"
+                                        android:text="Maps"
+                                        android:textColor="@color/text"
+                                        android:textSize="16sp" />
+
+                                    <TextView
+                                        android:id="@+id/mapsHint"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Where to?"
+                                        android:textColor="@color/text_dim"
+                                        android:textSize="13sp" />
+                                </LinearLayout>
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_chevron"
+                                    android:tint="@color/text_dim" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <View
+                            android:id="@+id/mapsClick"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:clickable="true"
+                            android:contentDescription="Open maps"
+                            android:focusable="true" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dock"
+                android:layout_width="match_parent"
+                android:layout_height="66dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:padding="5dp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
