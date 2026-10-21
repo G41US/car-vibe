@@ -12,8 +12,11 @@ android {
         // The head unit runs Android 8.1 (API 27) under a fake "Android 14" label.
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        // GitHub Actions numbers every build, so each one is newer than the last
+        // and the in-app updater can tell. Local builds stay at 1.
+        val run = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        versionCode = if (run != null) run + 1 else 1
+        versionName = if (run != null) "1.0.${run + 1}" else "1.0.0"
     }
 
     signingConfigs {

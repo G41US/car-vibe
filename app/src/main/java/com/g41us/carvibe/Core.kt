@@ -192,6 +192,46 @@ object Net {
 
     fun get(url: String): String = String(getBytes(url), Charsets.UTF_8)
 
+    /** Streams a file to disk, following redirects, reporting 0-100 progress (or -1 if unknown). */
+    fun download(url: String, dest: java.io.File, progress: (Int) -> Unit) {
+        var target = url
+        repeat(6) {
+            val c = open(target)
+            try {
+                val code = c.responseCode
+                if (code in 300..399) {
+                    val loc = c.getHeaderField("Location") ?: throw java.io.IOException("Redirect without location")
+                    target = URL(URL(target), loc).toString()
+                    return@repeat
+                }
+                if (code !in 200..299) throw java.io.IOException("HTTP $code")
+                val total = c.contentLength.toLong()
+                dest.parentFile?.mkdirs()
+                val tmp = java.io.File(dest.path + ".part")
+                c.inputStream.use { input ->
+                    tmp.outputStream().use { out ->
+                        val buf = ByteArray(64 * 1024)
+                        var done = 0L
+                        var last = -2
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            out.write(buf, 0, n)
+                            done += n
+                            val pct = if (total > 0) (done * 100 / total).toInt() else -1
+                            if (pct != last) { last = pct; main.post { progress(pct) } }
+                        }
+                    }
+                }
+                if (!tmp.renameTo(dest)) throw java.io.IOException("Couldn't save the download")
+                return
+            } finally {
+                c.disconnect()
+            }
+        }
+        throw java.io.IOException("Too many redirects")
+    }
+
     fun <T> async(work: () -> T, done: (T?) -> Unit) {
         io.execute {
             val result = try { work() } catch (e: Exception) { null }
