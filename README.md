@@ -36,9 +36,12 @@ Drag the button up or down to move it. Needs "Display over other apps".
 
 ## Install
 
-Download `CarVibe.apk` from the latest release (or the build's artifact),
-install it with Downloader or from a USB stick, then press Home and choose
+In the Downloader app, enter code **5827967**. It always downloads the newest
+build. Install it, go through setup, then press Home and choose
 Car Vibe → Always.
+
+You can also download `CarVibe.apk` from the latest release and install it
+from a USB stick.
 
 ## Updates
 
