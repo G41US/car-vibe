@@ -21,11 +21,13 @@ android {
 
     signingConfigs {
         create("carvibe") {
-            // A fixed key so every new build installs over the previous one.
-            storeFile = file("carvibe.jks")
-            storePassword = "carvibe-launcher"
+            // A fixed key so every new build installs over the previous one. The keystore is encrypted with
+            // SIGNING_PASSWORD, a GitHub repo secret: never write the password in this file (the repo is public).
+            storeFile = file("carvibe-release.p12")
+            storeType = "pkcs12"
+            storePassword = System.getenv("SIGNING_PASSWORD")
             keyAlias = "carvibe"
-            keyPassword = "carvibe-launcher"
+            keyPassword = System.getenv("SIGNING_PASSWORD")
         }
     }
 
@@ -34,10 +36,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("carvibe")
-        }
-        debug {
-            signingConfig = signingConfigs.getByName("carvibe")
+            // without the password (local builds) the release APK is left unsigned; CI refuses to publish that
+            if (!System.getenv("SIGNING_PASSWORD").isNullOrEmpty()) signingConfig = signingConfigs.getByName("carvibe")
         }
     }
 

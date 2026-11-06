@@ -22,7 +22,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build the APK
+        env:
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
+          # an APK signed any other way can't update the one in the car, so don't build or publish one
+          [ -n "$SIGNING_PASSWORD" ] || { echo "::error::Add the SIGNING_PASSWORD repo secret (Settings > Secrets and variables > Actions)"; exit 1; }
           chmod +x gradlew
           ./gradlew assembleRelease
           cp app/build/outputs/apk/release/app-release.apk CarVibe.apk
